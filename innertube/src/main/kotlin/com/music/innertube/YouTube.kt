@@ -637,9 +637,11 @@ object YouTube {
                     PlaylistPage.fromMusicResponsiveListItemRenderer(it)
                 } ?: emptyList(),
             songsContinuation = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
-                ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.contents?.getContinuation()
-                ?: response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
-                    ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.continuations?.getContinuation(),
+                ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.let { shelf ->
+                    shelf.contents.getContinuation()
+                        ?: shelf.continuations?.getContinuation()
+                        ?: shelf.moreContentButton?.buttonRenderer?.command?.continuationCommand?.token
+                },
             continuation = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
                 ?.continuations?.getContinuation(),
             related = related?.ifEmpty { null }
@@ -684,14 +686,20 @@ object YouTube {
             .mapNotNull { renderer -> PlaylistPage.fromMusicResponsiveListItemRenderer(renderer) }
 
         val nextContinuation = if (songs.isEmpty()) null else {
-            response.continuationContents
-                ?.sectionListContinuation
-                ?.continuations
-                ?.getContinuation()
+            mainContents.getContinuation()
+                ?: shelfContents.getContinuation()
+                ?: response.continuationContents
+                    ?.sectionListContinuation
+                    ?.continuations
+                    ?.getContinuation()
                 ?: response.continuationContents
                     ?.musicPlaylistShelfContinuation
                     ?.continuations
                     ?.getContinuation()
+                ?: response.continuationContents
+                    ?.musicPlaylistShelfContinuation
+                    ?.moreContentButton
+                    ?.buttonRenderer?.command?.continuationCommand?.token
                 ?: response.continuationContents
                     ?.musicShelfContinuation
                     ?.continuations

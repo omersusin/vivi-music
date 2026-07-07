@@ -8,4 +8,5 @@ data class MusicPlaylistShelfRenderer(
     val contents: List<MusicShelfRenderer.Content> = emptyList(),
     val collapsedItemCount: Int? = null,
     val continuations: List<Continuation>? = null,
+    val moreContentButton: Button? = null,
 )
